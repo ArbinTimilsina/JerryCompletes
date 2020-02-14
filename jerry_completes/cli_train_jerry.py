@@ -16,7 +16,7 @@ from jerry_completes.trainer import train_epoch, valid_epoch
 def argument_parser():
     ap = argparse.ArgumentParser()
     ap.add_argument(
-        '-epochs', '--epochs', type=int, default=1,
+        '-epochs', '--epochs', type=int, default=10,
         help='Choose the number of epochs for training.'
     )
     ap.add_argument(
@@ -131,7 +131,7 @@ def fine_tune_gpt2():
             print(f'Saving model to {save_dir:s}')
             model.save_pretrained(save_dir)
         else:
-            print('Valid loss ({valid_loss:.3f}) did not improve!')
+            print(f'Valid loss ({valid_loss:.3f}) did not improve!')
 
         elapsed_time = time.time() - start_time
         print(

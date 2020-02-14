@@ -3,7 +3,7 @@ import truecase
 
 
 def complete_this(
-        model, device, seed_sequence, max_length=20, temperature=1.0,
+        model, device, seed_sequence, max_length=25, temperature=1.0,
         stop_token="<|endoftext|>"
 ):
     tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
