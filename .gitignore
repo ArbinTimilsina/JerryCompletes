@@ -1,0 +1,4 @@
+*.egg-info
+.idea
+jerry_completes/__pycache__
+seinfeld_scripts/training.txt
