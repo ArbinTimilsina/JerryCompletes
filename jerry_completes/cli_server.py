@@ -1,13 +1,12 @@
+from flask import Flask, render_template, request
 from transformers import GPT2LMHeadModel
 
-from flask import Flask, render_template, request
 from jerry_completes.server import complete_this
 
 app = Flask(__name__)
 
-
 DEVICE = 'cpu'
-MODEL = GPT2LMHeadModel.from_pretrained('trained_model')
+MODEL = GPT2LMHeadModel.from_pretrained('output')
 MODEL.to(DEVICE)
 
 

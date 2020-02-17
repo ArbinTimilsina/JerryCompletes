@@ -1,6 +1,7 @@
 import argparse
-import time
 import os
+import time
+
 import torch
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader, RandomSampler
@@ -16,7 +17,7 @@ from jerry_completes.trainer import train_epoch, valid_epoch
 def argument_parser():
     ap = argparse.ArgumentParser()
     ap.add_argument(
-        '-epochs', '--epochs', type=int, default=10,
+        '-epochs', '--epochs', type=int, default=5,
         help='Choose the number of epochs for training.'
     )
     ap.add_argument(
@@ -43,7 +44,7 @@ def collate(examples):
     return pad_sequence(examples, batch_first=True)
 
 
-def fine_tune_gpt2():
+def train_jerry():
     args = argument_parser()
 
     num_epochs = int(args['epochs'])
@@ -51,17 +52,20 @@ def fine_tune_gpt2():
     block_size = int(args['block_size'])
     learning_rate = float(args['learning_rate'])
 
-    print()
     if torch.cuda.is_available():
         device = 'cuda'
-        print('Training on GPU.')
+        print('\nTraining on GPU.')
     else:
         device = 'cpu'
-        print('Training on CPU.')
+        print('\nTraining on CPU.')
 
+    output_dir = 'output'
+    if not os.path.isdir(f'{output_dir}'):
+        os.makedirs(f'{output_dir}')
+        
     # Get dataset
     tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
-    train_dataset, valid_dataset = get_dataset(tokenizer, block_size=block_size)
+    train_dataset, valid_dataset = get_dataset(tokenizer, output_dir, block_size=block_size)
 
     # Sample data randomly from a shuffled dataset
     train_sampler = RandomSampler(train_dataset)
@@ -104,17 +108,15 @@ def fine_tune_gpt2():
 
     # Schedule learning rate to decrease linearly after linearly increasing during a
     # warmup period
-    optimization_steps = len(train_dataloader) // num_epochs
+    optimization_steps = len(train_dataloader) * num_epochs
     scheduler = get_linear_schedule_with_warmup(
         optimizer, num_warmup_steps=0, num_training_steps=optimization_steps
     )
 
-    save_dir = 'trained_model'
-    if not os.path.isdir(f'{save_dir}'):
-        os.makedirs(f'{save_dir}')
-
     best_valid_loss = float('inf')
     start_time = time.time()
+    patience = 10
+    patience_counter = 0
     for epoch in trange(num_epochs, desc="Epoch"):
         train_loss, train_lr = train_epoch(
             model, train_dataloader, optimizer, scheduler, device
@@ -123,26 +125,33 @@ def fine_tune_gpt2():
 
         if valid_loss < best_valid_loss:
             print(
-                f'Valid loss {valid_loss:.3f} is less than best valid loss '
-                f'{best_valid_loss:.3f}!'
+                f'\nValid loss {valid_loss:.5f} improved from {best_valid_loss:.5f}!'
             )
             best_valid_loss = valid_loss
 
-            print(f'Saving model to {save_dir:s}')
-            model.save_pretrained(save_dir)
+            print(f'Saving model to {output_dir:s}')
+            model.save_pretrained(output_dir)
+            patience_counter = 0
         else:
-            print(f'Valid loss ({valid_loss:.3f}) did not improve!')
+            print(f'Valid loss ({valid_loss:.5f}) did not improve!')
+            patience_counter += 1
+            if patience_counter >= patience:
+                print(
+                    f"Valid loss did't improve for {patience_counter} epochs; exiting!"
+                )
+                break
 
         elapsed_time = time.time() - start_time
         print(
             f'Epoch: {epoch + 1} (of {num_epochs}); '
-            f'elapsed time: {elapsed_time / 60:.1f}m')
-        print(f'Train loss: {train_loss:.3f}; Valid loss: {valid_loss:.3f}')
-        print(f'Train lr: {train_lr:.3E}\n')
+            f'elapsed time: {elapsed_time / 60:.1f} min'
+        )
+        print(f'Train loss: {train_loss:.5f}; valid loss: {valid_loss:.5f}')
+        print(f'Train lr: {train_lr:.5E}\n')
 
 
 def main():
     """
     The setuptools entry point.
     """
-    fine_tune_gpt2()
+    train_jerry()

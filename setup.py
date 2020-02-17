@@ -10,7 +10,7 @@ setup(
     packages=['jerry_completes'],
     include_package_data=True,
     install_requires=[
-        'torch', 'transformers', 'tqdm', 'flask', 'truecase'
+        'torch', 'transformers', 'nltk', 'tqdm', 'flask', 'ftfy'
     ],
     zip_safe=False,
     classifiers=[

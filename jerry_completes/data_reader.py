@@ -2,14 +2,16 @@ import csv
 import os
 
 import torch
+from ftfy import fix_text
+from nltk import sent_tokenize
 from torch.utils.data import Dataset, random_split
 
 THIS_DIR = os.path.dirname(__file__)
-EOT = "<|endoftext|>"
+EOS = "<|endoftext|>"
 
 
-def get_dataset(tokenizer, block_size=512):
-    training_file_path = get_training_file()
+def get_dataset(tokenizer, output_dir, block_size=512):
+    training_file_path = get_training_file(output_dir)
     dataset = TextDataset(
         tokenizer=tokenizer, file_path=training_file_path, block_size=block_size
     )
@@ -20,22 +22,25 @@ def get_dataset(tokenizer, block_size=512):
     return train_dataset, valid_dataset
 
 
-def get_training_file():
+def get_training_file(output_dir):
     """
-    Get all the dialogues by Jerry in the CSV file and write it to a txt file.
+    Get all the dialogues by Jerry in the CSV file and write it to a text file.
     """
+    # Note: dataset is obtained from https://www.kaggle.com/thec03u5/seinfeld-chronicles
     seinfeld_scripts = os.path.join(
         THIS_DIR, '..', 'seinfeld_scripts', 'complete_seinfeld_scripts.csv'
     )
-    training_file = os.path.join(os.path.dirname(seinfeld_scripts), 'training.txt')
-
-    if not os.path.isfile(training_file):
-        with open(seinfeld_scripts) as input_file:
-            with open(training_file, 'w') as out_file:
-                input_data = csv.DictReader(input_file)
-                for row in input_data:
-                    if row['Character'] == 'JERRY':
-                        out_file.write(row['Dialogue'] + EOT)
+    training_file = os.path.join(output_dir, 'seinfeld_input.txt')
+    min_length = 25
+    with open(seinfeld_scripts) as input_file:
+        with open(training_file, 'w') as out_file:
+            input_data = csv.DictReader(input_file)
+            for row in input_data:
+                if row['Character'] == 'JERRY':
+                    dialogue = row['Dialogue']
+                    for sentence in sent_tokenize(dialogue):
+                        if len(sentence.encode('utf-8')) > min_length:
+                            out_file.write(fix_text(sentence) + EOS)
     return training_file
 
 
