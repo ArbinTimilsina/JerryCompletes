@@ -7,10 +7,9 @@ from nltk import sent_tokenize
 from torch.utils.data import Dataset, random_split
 
 THIS_DIR = os.path.dirname(__file__)
-EOS = "<|endoftext|>"
 
 
-def get_dataset(tokenizer, output_dir, block_size=512):
+def get_dataset(tokenizer, output_dir, block_size=128):
     training_file_path = get_training_file(output_dir)
     dataset = TextDataset(
         tokenizer=tokenizer, file_path=training_file_path, block_size=block_size
@@ -31,7 +30,8 @@ def get_training_file(output_dir):
         THIS_DIR, '..', 'seinfeld_scripts', 'complete_seinfeld_scripts.csv'
     )
     training_file = os.path.join(output_dir, 'seinfeld_input.txt')
-    min_length = 25
+
+    min_length = 8
     with open(seinfeld_scripts) as input_file:
         with open(training_file, 'w') as out_file:
             input_data = csv.DictReader(input_file)
@@ -40,28 +40,34 @@ def get_training_file(output_dir):
                     dialogue = row['Dialogue']
                     for sentence in sent_tokenize(dialogue):
                         if len(sentence.encode('utf-8')) > min_length:
-                            out_file.write(fix_text(sentence) + EOS)
+                            out_file.write(fix_text(sentence) + '\n')
     return training_file
 
 
 class TextDataset(Dataset):
-    def __init__(self, tokenizer, file_path, block_size):
+    def __init__(self, tokenizer, file_path, block_size, line_by_line=True):
         assert os.path.isfile(file_path)
 
-        block_size = block_size - (tokenizer.max_len - tokenizer.max_len_single_sentence)
+        if line_by_line:
+            with open(file_path, encoding="utf-8") as f:
+                lines = [line for line in f.read().splitlines()]
 
-        self.examples = []
-        with open(file_path, encoding="utf-8") as f:
-            text = f.read()
+            self.examples = tokenizer.batch_encode_plus(
+                lines, add_special_tokens=True, max_length=block_size
+            )['input_ids']
+        else:
+            self.examples = []
+            with open(file_path, encoding="utf-8") as f:
+                text = f.read()
 
-        tokenized_text = tokenizer.convert_tokens_to_ids(tokenizer.tokenize(text))
+            tokenized_text = tokenizer.convert_tokens_to_ids(tokenizer.tokenize(text))
 
-        for i in range(0, len(tokenized_text) - block_size + 1, block_size):
-            self.examples.append(
-                tokenizer.build_inputs_with_special_tokens(
-                    tokenized_text[i: i + block_size]
+            for i in range(0, len(tokenized_text) - block_size + 1, block_size):
+                self.examples.append(
+                    tokenizer.build_inputs_with_special_tokens(
+                        tokenized_text[i: i + block_size]
+                    )
                 )
-            )
 
     def __len__(self):
         return len(self.examples)

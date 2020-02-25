@@ -17,19 +17,19 @@ from jerry_completes.trainer import train_epoch, valid_epoch
 def argument_parser():
     ap = argparse.ArgumentParser()
     ap.add_argument(
-        '-epochs', '--epochs', type=int, default=5,
+        '-epochs', '--epochs', type=int, default=300,
         help='Choose the number of epochs for training.'
     )
     ap.add_argument(
-        '-batch_size', '--batch_size', type=int, default=1,
+        '-batch_size', '--batch_size', type=int, default=16,
         help='Batch size.'
     )
     ap.add_argument(
-        '-block_size', '--block_size', type=int, default=512,
+        '-block_size', '--block_size', type=int, default=40,
         help='Sequence block size.'
     )
     ap.add_argument(
-        '-learning_rate', '--learning_rate', type=int, default=5e-5,
+        '-learning_rate', '--learning_rate', type=int, default=5e-8,
         help='Learning rate.'
     )
 
