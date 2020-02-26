@@ -2,9 +2,12 @@ import csv
 import os
 
 import torch
+import nltk
 from ftfy import fix_text
 from nltk import sent_tokenize
 from torch.utils.data import Dataset, random_split
+
+nltk.download('punkt')
 
 THIS_DIR = os.path.dirname(__file__)
 
