@@ -21,7 +21,7 @@ def argument_parser():
         help='Choose the number of epochs for training.'
     )
     ap.add_argument(
-        '-batch_size', '--batch_size', type=int, default=16,
+        '-batch_size', '--batch_size', type=int, default=80,
         help='Batch size.'
     )
     ap.add_argument(
