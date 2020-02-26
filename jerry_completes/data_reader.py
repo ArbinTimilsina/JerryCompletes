@@ -45,29 +45,15 @@ def get_training_file(output_dir):
 
 
 class TextDataset(Dataset):
-    def __init__(self, tokenizer, file_path, block_size, line_by_line=True):
+    def __init__(self, tokenizer, file_path, block_size):
         assert os.path.isfile(file_path)
 
-        if line_by_line:
-            with open(file_path, encoding="utf-8") as f:
-                lines = [line for line in f.read().splitlines()]
+        with open(file_path, encoding="utf-8") as file:
+            lines = [line for line in file.read().splitlines()]
 
-            self.examples = tokenizer.batch_encode_plus(
-                lines, add_special_tokens=True, max_length=block_size
-            )['input_ids']
-        else:
-            self.examples = []
-            with open(file_path, encoding="utf-8") as f:
-                text = f.read()
-
-            tokenized_text = tokenizer.convert_tokens_to_ids(tokenizer.tokenize(text))
-
-            for i in range(0, len(tokenized_text) - block_size + 1, block_size):
-                self.examples.append(
-                    tokenizer.build_inputs_with_special_tokens(
-                        tokenized_text[i: i + block_size]
-                    )
-                )
+        self.examples = tokenizer.batch_encode_plus(
+            lines, add_special_tokens=True, max_length=block_size
+        )['input_ids']
 
     def __len__(self):
         return len(self.examples)

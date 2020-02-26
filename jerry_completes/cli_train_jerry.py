@@ -129,8 +129,9 @@ def train_jerry():
             )
             best_valid_loss = valid_loss
 
-            print(f'Saving model to {output_dir:s}')
+            print(f'Saving model and tokenizer to /{output_dir:s}')
             model.save_pretrained(output_dir)
+            tokenizer.save_pretrained(output_dir)
             patience_counter = 0
         else:
             print(f'Valid loss ({valid_loss:.5f}) did not improve!')

@@ -1,12 +1,10 @@
 from ftfy import fix_text
 from nltk import sent_tokenize
-from transformers import GPT2Tokenizer
 
 
 def complete_this(
-        model, device, seed_sequence, max_length=40, temperature=1.2, num_sent=2
+        model, tokenizer, device, seed_sequence, max_length=40, temperature=1.0, num_sent=2
 ):
-    tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
     encoded_seed_sequence = tokenizer.encode(
         seed_sequence, add_special_tokens=False, return_tensors="pt"
     )
@@ -27,6 +25,7 @@ def complete_this(
         generated_sequence, clean_up_tokenization_spaces=True
     )
     decoded_generated_sequence = fix_text(decoded_generated_sequence)
+    print(decoded_generated_sequence)
     decoded_generated_sequence = decoded_generated_sequence.replace('\n', ' ')
 
     sentences = sent_tokenize(decoded_generated_sequence)
