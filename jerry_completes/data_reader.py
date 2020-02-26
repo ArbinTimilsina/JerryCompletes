@@ -2,17 +2,16 @@ import csv
 import os
 
 import torch
-import nltk
 from ftfy import fix_text
-from nltk import sent_tokenize
 from torch.utils.data import Dataset, random_split
-
-nltk.download('punkt')
 
 THIS_DIR = os.path.dirname(__file__)
 
+BOS = '<|startoftext|>'
+EOS = '<|endoftext|>'
 
-def get_dataset(tokenizer, output_dir, block_size=128):
+
+def get_dataset(tokenizer, output_dir, block_size=512):
     training_file_path = get_training_file(output_dir)
     dataset = TextDataset(
         tokenizer=tokenizer, file_path=training_file_path, block_size=block_size
@@ -41,9 +40,8 @@ def get_training_file(output_dir):
             for row in input_data:
                 if row['Character'] == 'JERRY':
                     dialogue = row['Dialogue']
-                    for sentence in sent_tokenize(dialogue):
-                        if len(sentence.encode('utf-8')) > min_length:
-                            out_file.write(fix_text(sentence) + '\n')
+                    if len(dialogue.encode('utf-8')) > min_length:
+                        out_file.write(BOS+ fix_text(dialogue) + EOS)
     return training_file
 
 
@@ -51,12 +49,18 @@ class TextDataset(Dataset):
     def __init__(self, tokenizer, file_path, block_size):
         assert os.path.isfile(file_path)
 
-        with open(file_path, encoding="utf-8") as file:
-            lines = [line for line in file.read().splitlines()]
+        self.examples = []
+        with open(file_path, encoding="utf-8") as f:
+            text = f.read()
 
-        self.examples = tokenizer.batch_encode_plus(
-            lines, add_special_tokens=True, max_length=block_size
-        )['input_ids']
+        tokenized_text = tokenizer.convert_tokens_to_ids(tokenizer.tokenize(text))
+
+        for i in range(0, len(tokenized_text) - block_size + 1, block_size):
+            self.examples.append(
+                tokenizer.build_inputs_with_special_tokens(
+                    tokenized_text[i: i + block_size]
+                )
+            )
 
     def __len__(self):
         return len(self.examples)

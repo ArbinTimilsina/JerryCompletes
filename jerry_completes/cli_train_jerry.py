@@ -21,11 +21,11 @@ def argument_parser():
         help='Choose the number of epochs for training.'
     )
     ap.add_argument(
-        '-batch_size', '--batch_size', type=int, default=80,
+        '-batch_size', '--batch_size', type=int, default=1,
         help='Batch size.'
     )
     ap.add_argument(
-        '-block_size', '--block_size', type=int, default=40,
+        '-block_size', '--block_size', type=int, default=512,
         help='Sequence block size.'
     )
     ap.add_argument(

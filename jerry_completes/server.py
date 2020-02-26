@@ -1,10 +1,15 @@
 from ftfy import fix_text
 from nltk import sent_tokenize
+from .data_reader import BOS
+
+import nltk
+nltk.download('punkt')
 
 
 def complete_this(
         model, tokenizer, device, seed_sequence, max_length=40, temperature=1.0, num_sent=2
 ):
+    seed_sequence = BOS + seed_sequence
     encoded_seed_sequence = tokenizer.encode(
         seed_sequence, add_special_tokens=False, return_tensors="pt"
     )
