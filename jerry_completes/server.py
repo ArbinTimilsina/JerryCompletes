@@ -1,9 +1,13 @@
+import nltk
 from ftfy import fix_text
 from nltk import sent_tokenize
+
 from .data_reader import BOS
 
-import nltk
-nltk.download('punkt')
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt')
 
 
 def complete_this(

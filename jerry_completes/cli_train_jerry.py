@@ -17,11 +17,11 @@ from jerry_completes.trainer import train_epoch, valid_epoch
 def argument_parser():
     ap = argparse.ArgumentParser()
     ap.add_argument(
-        '-epochs', '--epochs', type=int, default=300,
+        '-epochs', '--epochs', type=int, default=500,
         help='Choose the number of epochs for training.'
     )
     ap.add_argument(
-        '-batch_size', '--batch_size', type=int, default=1,
+        '-batch_size', '--batch_size', type=int, default=3,
         help='Batch size.'
     )
     ap.add_argument(
@@ -67,6 +67,12 @@ def train_jerry():
     tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
     train_dataset, valid_dataset = get_dataset(tokenizer, output_dir, block_size=block_size)
 
+    print(f'Batch size is {batch_size}.')
+    print(
+        f'Training on {len(train_dataset)} sequences and '
+        f'validating on {len(valid_dataset)} sequences.\n'
+    )
+
     # Sample data randomly from a shuffled dataset
     train_sampler = RandomSampler(train_dataset)
     valid_sampler = RandomSampler(valid_dataset)
@@ -77,11 +83,6 @@ def train_jerry():
     )
     valid_dataloader = DataLoader(
         valid_dataset, sampler=valid_sampler, batch_size=batch_size, collate_fn=collate
-    )
-    print(f'Batch size is {batch_size}.')
-    print(
-        f'Training on {len(train_dataloader)} sequences and '
-        f'validating on {len(valid_dataloader)} sequences.\n'
     )
 
     # Get the pre-trained GPT2 Model transformer with a language modeling head on top

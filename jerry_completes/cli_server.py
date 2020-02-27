@@ -1,7 +1,6 @@
+import torch
 from flask import Flask, render_template, request
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
-
-import torch
 
 from jerry_completes.server import complete_this
 
