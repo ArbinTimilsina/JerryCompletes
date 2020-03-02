@@ -2,7 +2,7 @@ import nltk
 from ftfy import fix_text
 from nltk import sent_tokenize
 
-from .data_reader import BOS
+from jerry_completes.data_reader import BOS, EOS
 
 try:
     nltk.data.find('tokenizers/punkt')
@@ -11,7 +11,7 @@ except LookupError:
 
 
 def complete_this(
-        model, tokenizer, device, seed_sequence, max_length=40, temperature=1.0, num_sent=2
+        model, tokenizer, device, seed_sequence, max_length=40, num_sent=1
 ):
     seed_sequence = BOS + seed_sequence
     encoded_seed_sequence = tokenizer.encode(
@@ -22,9 +22,9 @@ def complete_this(
     output_sequences = model.generate(
         input_ids=encoded_seed_sequence,
         max_length=max_length,
-        temperature=temperature,
+        temperature=1.0,
         top_k=0,
-        top_p=0.9,
+        top_p=0.95,
         repetition_penalty=1.0,
         do_sample=True
     )
@@ -33,9 +33,11 @@ def complete_this(
     decoded_generated_sequence = tokenizer.decode(
         generated_sequence, clean_up_tokenization_spaces=True
     )
-    decoded_generated_sequence = fix_text(decoded_generated_sequence)
-    print(decoded_generated_sequence)
-    decoded_generated_sequence = decoded_generated_sequence.replace('\n', ' ')
+    generated_sequence = fix_text(decoded_generated_sequence)
+    decoded_generated_sequence = generated_sequence.replace('\n', ' ')\
+        .replace(BOS, ' ').replace(EOS, ' ').replace('</|startoftext|>', ' ')\
+        .replace('<|', ' ').replace('|>', ' ').replace('< |', ' ').replace('| >', ' ')\
+        .replace('</', ' ')
 
     sentences = sent_tokenize(decoded_generated_sequence)
     output = ''
@@ -44,3 +46,15 @@ def complete_this(
     for i in range(num_sent):
         output = output + ' ' + sentences[i]
     return output
+
+
+if __name__ == "__main__":
+    from transformers import GPT2LMHeadModel, GPT2Tokenizer
+
+    DEVICE = 'cpu'
+    MODEL = GPT2LMHeadModel.from_pretrained('output')
+    MODEL.to(DEVICE)
+    TOKENIZER = GPT2Tokenizer.from_pretrained('output')
+    seed_sequence = "Don't tell Kramer"
+
+    print(complete_this(MODEL, TOKENIZER, DEVICE, seed_sequence))

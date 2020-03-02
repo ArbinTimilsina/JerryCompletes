@@ -4,7 +4,7 @@ import time
 
 import torch
 from torch.nn.utils.rnn import pad_sequence
-from torch.utils.data import DataLoader, RandomSampler
+from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from tqdm import trange
 from transformers import (
     AdamW, GPT2LMHeadModel, GPT2Tokenizer, get_linear_schedule_with_warmup
@@ -75,7 +75,7 @@ def train_jerry():
 
     # Sample data randomly from a shuffled dataset
     train_sampler = RandomSampler(train_dataset)
-    valid_sampler = RandomSampler(valid_dataset)
+    valid_sampler = SequentialSampler(valid_dataset)
 
     # Combine a dataset and a sampler, and provide an iterable over the given dataset.
     train_dataloader = DataLoader(
