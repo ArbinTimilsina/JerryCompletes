@@ -1,4 +1,4 @@
-# Jerry Says
+# Jerry Completes
 
 Try to predict how Jerry Seinfeld would finish a given incomplete sentence.
 
