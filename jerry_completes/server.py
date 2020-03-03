@@ -46,15 +46,3 @@ def complete_this(
     for i in range(num_sent):
         output = output + ' ' + sentences[i]
     return output
-
-
-if __name__ == "__main__":
-    from transformers import GPT2LMHeadModel, GPT2Tokenizer
-
-    DEVICE = 'cpu'
-    MODEL = GPT2LMHeadModel.from_pretrained('output')
-    MODEL.to(DEVICE)
-    TOKENIZER = GPT2Tokenizer.from_pretrained('output')
-    seed_sequence = "Don't tell Kramer"
-
-    print(complete_this(MODEL, TOKENIZER, DEVICE, seed_sequence))
