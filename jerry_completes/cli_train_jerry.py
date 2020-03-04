@@ -59,7 +59,7 @@ def train_jerry():
         device = 'cpu'
         print('\nTraining on CPU.')
 
-    output_dir = 'output'
+    output_dir = 'model'
     if not os.path.isdir(f'{output_dir}'):
         os.makedirs(f'{output_dir}')
         
